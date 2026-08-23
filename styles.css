@@ -24,40 +24,68 @@ img { display: block; max-width: 100%; }
 ol, ul { list-style: none; }
 
 /* --- Theme --- */
+/* ──────────────────────────────────────────────
+   60-30-10 COLOR RULE
+   60% = DOMINANT  (bg, hero, footer, canvas)
+   30% = SECONDARY (cards, panels, nav, sections)
+   10% = ACCENT    (CTAs, highlights, active states)
+   ────────────────────────────────────────────── */
 :root {
-  /* Dark (default) */
-  --bg: #0a0a0a;
-  --bg-2: #111111;
-  --bg-3: #1a1a1a;
-  --fg: #f0f0f0;
-  --fg-muted: #6b6b6b;
-  --fg-dim: #444;
-  --accent: #c8ff00;
-  --accent-2: #00ff88;
-  --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.15);
-  --glass: rgba(10,10,10,0.8);
-  --shadow: 0 20px 60px rgba(0,0,0,0.5);
+  /* ── DARK ── */
+  /* 60% Dominant — deep warm black */
+  --bg: #0c0c0c;
+  --bg-deep: #080808;
+  /* 30% Secondary — warm charcoal */
+  --bg-2: #1c1a17;
+  --bg-3: #252220;
+  --bg-card: #161412;
+  /* 10% Accent — electric chartreuse */
+  --accent: #d4ff00;
+  --accent-hover: #e0ff40;
+  --accent-2: #a8e600;
+  /* Text */
+  --fg: #f0ece4;
+  --fg-muted: #8a8478;
+  --fg-dim: #5a5650;
+  --fg-on-accent: #0c0c0c;
+  /* Structure */
+  --border: rgba(240,236,228,0.07);
+  --border-strong: rgba(240,236,228,0.14);
+  --glass: rgba(12,12,12,0.82);
+  --shadow: 0 24px 80px rgba(0,0,0,0.55);
+  /* Fonts */
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+  /* Layout */
   --shell: min(1400px, calc(100vw - 80px));
+  /* Motion */
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── LIGHT ── */
 html[data-theme="light"] {
-  --bg: #f5f3ee;
-  --bg-2: #eae7e0;
-  --bg-3: #ddd9d0;
-  --fg: #0a0a0a;
-  --fg-muted: #666;
-  --fg-dim: #999;
-  --accent: #00cc44;
-  --accent-2: #0066ff;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.15);
-  --glass: rgba(245,243,238,0.85);
-  --shadow: 0 20px 60px rgba(0,0,0,0.08);
+  /* 60% Dominant — warm parchment */
+  --bg: #f5f2eb;
+  --bg-deep: #ece8e0;
+  /* 30% Secondary — warm stone */
+  --bg-2: #e2ddd3;
+  --bg-3: #d8d2c6;
+  --bg-card: #ebe7df;
+  /* 10% Accent — deep forest */
+  --accent: #0a6e3a;
+  --accent-hover: #0c8a48;
+  --accent-2: #085a2e;
+  /* Text */
+  --fg: #1a1816;
+  --fg-muted: #7a7468;
+  --fg-dim: #a8a298;
+  --fg-on-accent: #f5f2eb;
+  /* Structure */
+  --border: rgba(26,24,22,0.08);
+  --border-strong: rgba(26,24,22,0.16);
+  --glass: rgba(245,242,235,0.85);
+  --shadow: 0 24px 80px rgba(0,0,0,0.08);
 }
 
 /* ============================================
@@ -78,6 +106,7 @@ html[data-theme="light"] {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.3s var(--ease), height 0.3s var(--ease), background 0.3s;
+  box-shadow: 0 0 8px rgba(212,255,0,0.3);
 }
 .cursor-ring {
   position: absolute;
@@ -102,6 +131,7 @@ html[data-theme="light"] {
   left: -28px;
   opacity: 1;
   border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(212,255,0,0.15);
 }
 .cursor.is-clicking .cursor-ring {
   width: 32px;
@@ -167,7 +197,7 @@ html[data-theme="light"] {
 }
 
 /* ============================================
-   NAVIGATION
+   NAVIGATION — 30% Secondary
    ============================================ */
 .nav {
   position: fixed;
@@ -264,10 +294,10 @@ html[data-theme="light"] {
 .nav-cta {
   padding: 10px 18px !important;
   background: var(--accent);
-  color: var(--bg) !important;
+  color: var(--fg-on-accent) !important;
   transition: transform 0.3s var(--ease), background 0.3s !important;
 }
-.nav-cta:hover { transform: scale(1.04); background: var(--accent-2) !important; }
+.nav-cta:hover { transform: scale(1.04); background: var(--accent-hover) !important; }
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -337,7 +367,7 @@ html[data-theme="light"] {
 .mobile-menu-links a:hover { color: var(--accent); padding-left: 16px; }
 
 /* ============================================
-   HERO
+   HERO — 60% Dominant background
    ============================================ */
 .hero {
   position: relative;
@@ -409,6 +439,7 @@ html[data-theme="light"] {
   color: var(--accent);
   font-style: italic;
   -webkit-text-stroke: 0;
+  text-shadow: 0 0 40px rgba(212,255,0,0.25);
 }
 .hero-line--outline {
   color: transparent;
@@ -459,7 +490,7 @@ html[data-theme="light"] {
   position: relative;
   overflow: hidden;
   aspect-ratio: 2/3;
-  background: var(--bg-2);
+  background: var(--bg-card);
 }
 .portrait-frame img {
   width: 100%;
@@ -478,6 +509,7 @@ html[data-theme="light"] {
   mix-blend-mode: overlay;
   opacity: 0;
   transition: opacity 0.3s;
+  pointer-events: none;
 }
 .portrait-frame:hover .portrait-glitch {
   opacity: 0.08;
@@ -487,7 +519,7 @@ html[data-theme="light"] {
   content: '';
   position: absolute;
   inset: 12px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--border-strong);
   z-index: 2;
   pointer-events: none;
   transition: inset 0.5s var(--ease);
@@ -541,7 +573,7 @@ html[data-theme="light"] {
   border-radius: 50%;
   background: var(--accent);
   animation: pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 8px var(--accent);
+  box-shadow: 0 0 12px var(--accent);
 }
 @keyframes pulse {
   50% { opacity: 0.3; transform: scale(0.7); }
@@ -618,12 +650,13 @@ html[data-theme="light"] {
 /* ============================================
    MARQUEE
    ============================================ */
+/* ── 10% Accent strip ── */
 .marquee-strip {
   position: relative;
   z-index: 2;
   overflow: hidden;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--fg-on-accent);
   border-top: 1px solid var(--bg);
   border-bottom: 1px solid var(--bg);
 }
@@ -694,7 +727,7 @@ html[data-theme="light"] {
 .section-sub--light { color: var(--fg-muted); }
 
 /* ============================================
-   WORK
+   WORK — 60% Dominant background
    ============================================ */
 .work-section {
   position: relative;
@@ -718,13 +751,11 @@ html[data-theme="light"] {
   grid-template-columns: 1.3fr 0.7fr;
   max-width: var(--shell);
   margin: 0 auto;
-  margin-left: auto;
-  margin-right: auto;
   padding: 0 40px;
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;
-  background: var(--bg-2);
+  background: var(--bg-card);
 }
 .work-visual {
   position: relative;
@@ -765,7 +796,7 @@ html[data-theme="light"] {
   right: 20px;
   padding: 10px 14px;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--fg-on-accent);
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
@@ -788,7 +819,7 @@ html[data-theme="light"] {
   display: flex;
   flex-direction: column;
   padding: 32px clamp(24px, 4vw, 56px) 40px;
-  background: var(--bg-2);
+  background: var(--bg-card);
 }
 .work-info-top {
   display: flex;
@@ -842,7 +873,7 @@ html[data-theme="light"] {
 }
 .inspector-tab:last-child { border-right: 0; }
 .inspector-tab.active, .inspector-tab:hover {
-  background: var(--bg);
+  background: var(--bg-card);
   color: var(--fg);
 }
 .inspector-panel { display: none; padding: 16px 0; min-height: 100px; }
@@ -886,9 +917,9 @@ html[data-theme="light"] {
 .btn:hover span:last-child { transform: translate(2px, -2px); }
 .btn-filled {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--fg-on-accent);
 }
-.btn-filled:hover { background: var(--accent-2); transform: scale(1.03); }
+.btn-filled:hover { background: var(--accent-hover); transform: scale(1.03); }
 .btn-lg { padding: 16px 28px; font-size: 11px; }
 
 .btn-ghost {
@@ -907,7 +938,7 @@ html[data-theme="light"] {
 .btn-ghost--light:hover { color: var(--fg); border-color: var(--fg); }
 
 /* ============================================
-   CAPABILITIES
+   CAPABILITIES — 30% Secondary background
    ============================================ */
 .capabilities-section {
   position: relative;
@@ -916,7 +947,7 @@ html[data-theme="light"] {
   background: var(--bg-2);
   overflow: hidden;
 }
-/* Decorative circle */
+/* Decorative circle — 30% secondary tone */
 .capabilities-section::before {
   content: '';
   position: absolute;
@@ -924,7 +955,7 @@ html[data-theme="light"] {
   aspect-ratio: 1;
   top: -30vw;
   right: -15vw;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 50%;
   box-shadow: 0 0 0 6vw var(--bg-2), 0 0 0 8vw var(--border);
 }
@@ -960,6 +991,7 @@ html[data-theme="light"] {
   border-bottom: 1px solid var(--border);
   overflow: hidden;
   cursor: pointer;
+  background: var(--bg-card);
 }
 .cap-fill {
   position: absolute;
@@ -970,16 +1002,16 @@ html[data-theme="light"] {
   z-index: 0;
 }
 .cap-cell:hover .cap-fill { height: 100%; }
-.cap-cell:hover { color: var(--bg); }
+.cap-cell:hover { color: var(--fg-on-accent); }
 .cap-cell > * { position: relative; z-index: 1; }
 .cap-num {
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
-  color: var(--fg-muted);
+  color: var(--accent);
   transition: color 0.3s;
 }
-.cap-cell:hover .cap-num { color: var(--bg); opacity: 0.6; }
+.cap-cell:hover .cap-num { color: var(--fg-on-accent); opacity: 0.5; }
 .cap-content { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
 .cap-cell h3 {
   font-family: var(--font-display);
@@ -996,7 +1028,7 @@ html[data-theme="light"] {
   color: var(--fg-muted);
   transition: color 0.3s;
 }
-.cap-cell:hover p { color: var(--bg); opacity: 0.7; }
+.cap-cell:hover p { color: var(--fg-on-accent); opacity: 0.7; }
 .cap-arrow {
   position: absolute;
   top: 20px;
@@ -1006,10 +1038,10 @@ html[data-theme="light"] {
   transition: color 0.3s, transform 0.3s var(--ease);
   z-index: 1;
 }
-.cap-cell:hover .cap-arrow { color: var(--bg); transform: translate(4px, 4px); }
+.cap-cell:hover .cap-arrow { color: var(--fg-on-accent); transform: translate(4px, 4px); }
 
 /* ============================================
-   METHOD
+   METHOD — 60% Dominant background
    ============================================ */
 .method-section {
   position: relative;
@@ -1036,6 +1068,7 @@ html[data-theme="light"] {
   font-size: 0.42em;
   line-height: 1;
   letter-spacing: -0.03em;
+  text-shadow: 0 0 30px rgba(212,255,0,0.15);
 }
 
 .method-steps { border-top: 1px solid var(--border); }
@@ -1053,6 +1086,7 @@ html[data-theme="light"] {
   font-size: 10px;
   font-weight: 700;
   color: var(--accent);
+  text-shadow: 0 0 12px rgba(212,255,0,0.2);
 }
 .step-content strong {
   display: block;
@@ -1084,17 +1118,17 @@ html[data-theme="light"] {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
 }
 
 /* ============================================
-   ABOUT
+   ABOUT — 30% Secondary background
    ============================================ */
 .about-section {
   position: relative;
   z-index: 2;
   padding: 120px 0;
-  background: var(--bg-3);
+  background: var(--bg-2);
   overflow: hidden;
 }
 .about-inner {
@@ -1132,7 +1166,7 @@ html[data-theme="light"] {
   align-items: center;
   justify-content: center;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--fg-on-accent);
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 13px;
@@ -1152,7 +1186,7 @@ html[data-theme="light"] {
 }
 
 /* ============================================
-   COMING SOON
+   COMING SOON — 60% Dominant background
    ============================================ */
 .coming-section {
   position: relative;
@@ -1162,12 +1196,13 @@ html[data-theme="light"] {
   margin: 0 auto;
   padding-left: 40px;
   padding-right: 40px;
+  background: var(--bg);
 }
 .coming-card {
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;
-  background: var(--bg-2);
+  background: var(--bg-card);
 }
 .coming-status {
   display: flex;
@@ -1204,8 +1239,8 @@ html[data-theme="light"] {
   display: inline-block;
   margin-top: 28px;
   padding: 10px 16px;
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--fg-on-accent);
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
@@ -1242,7 +1277,7 @@ html[data-theme="light"] {
   transition: transform 0.4s var(--ease), border-color 0.3s;
 }
 .diagram-shape.circle { border-radius: 50%; }
-.diagram-shape.square { background: var(--accent); border-color: var(--accent); transform: rotate(45deg); }
+.diagram-shape.square { background: var(--accent); border-color: var(--accent); transform: rotate(45deg); color: var(--fg-on-accent); }
 .diagram-item:hover .diagram-shape { border-color: var(--accent); }
 .diagram-connector {
   width: 48px;
@@ -1251,16 +1286,16 @@ html[data-theme="light"] {
 }
 
 /* ============================================
-   CONTACT
+   CONTACT — 30% Secondary background
    ============================================ */
 .contact-section {
   position: relative;
   z-index: 2;
   padding: 120px 0;
-  background: var(--bg-3);
+  background: var(--bg-2);
   overflow: hidden;
 }
-/* Orbital decoration */
+/* Orbital decoration — 30% secondary tone */
 .contact-section::before {
   content: '';
   position: absolute;
@@ -1268,9 +1303,9 @@ html[data-theme="light"] {
   aspect-ratio: 1;
   right: -30vw;
   top: -25vw;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 50%;
-  box-shadow: 0 0 0 4vw var(--bg-3), 0 0 0 5vw var(--border);
+  box-shadow: 0 0 0 4vw var(--bg-2), 0 0 0 5vw var(--border);
 }
 .contact-inner {
   position: relative;
@@ -1304,6 +1339,9 @@ html[data-theme="light"] {
 
 /* ============================================
    FOOTER
+   ============================================ */
+/* ============================================
+   FOOTER — 60% Dominant background
    ============================================ */
 .footer {
   position: relative;
