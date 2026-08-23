@@ -270,6 +270,137 @@
     }, 350);
   };
 
+  // ── Card tilt sound — soft "wobble" tone ──
+  const playTiltSound = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(280, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.22);
+  };
+
+  // ── Glitch sound — short digital burst ──
+  const playGlitchSound = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    for (let i = 0; i < 3; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(400 + Math.random() * 2000, ctx.currentTime + i * 0.04);
+      osc.frequency.exponentialRampToValueAtTime(100 + Math.random() * 400, ctx.currentTime + i * 0.04 + 0.03);
+      gain.gain.setValueAtTime(0.03, ctx.currentTime + i * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.04 + 0.04);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.04);
+      osc.stop(ctx.currentTime + i * 0.04 + 0.05);
+    }
+  };
+
+  // ── Spotlight whoosh — soft filtered noise ──
+  let spotlightNoise = null;
+  let spotlightGain = null;
+  const playSpotlightStart = () => {
+    const ctx = initAudio();
+    if (!ctx || spotlightNoise) return;
+    const bufSize = ctx.sampleRate * 0.3;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+    spotlightNoise = ctx.createBufferSource();
+    spotlightNoise.buffer = buf;
+    spotlightNoise.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 300;
+    filter.Q.value = 0.5;
+    spotlightGain = ctx.createGain();
+    spotlightGain.gain.setValueAtTime(0, ctx.currentTime);
+    spotlightGain.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.5);
+    spotlightNoise.connect(filter).connect(spotlightGain).connect(ctx.destination);
+    spotlightNoise.start();
+  };
+  const playSpotlightStop = () => {
+    if (!audioCtx || !spotlightGain) return;
+    spotlightGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+    setTimeout(() => { try { spotlightNoise?.stop(); } catch(e) {} spotlightNoise = null; spotlightGain = null; }, 450);
+  };
+
+  // ── Counter tick — micro click per number change ──
+  const playCounterTick = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    gain.gain.setValueAtTime(0.015, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.025);
+  };
+
+  // ── Distortion sweep — rising bandpass tone ──
+  const playDistortionSweep = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.Q.value = 2;
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(80, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.4);
+    filter.frequency.setValueAtTime(80, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.4);
+    gain.gain.setValueAtTime(0.035, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.connect(filter).connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  };
+
+  // ── Hover pop — tiny ascending blip ──
+  const playHoverPop = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(500, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.025, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.1);
+  };
+
+  // ── Section transition — deep pad swell ──
+  const playSectionSwell = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(110, ctx.currentTime);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.85);
+  };
+
   /* ── Preloader orchestration ── */
   const dismissPreloader = () => {
     if (loadDone) return;
@@ -513,6 +644,7 @@
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           entry.target.classList.add("is-visible");
+          if (entry.target.classList.contains('section') && soundEnabled) playSectionSwell();
           observer.unobserve(entry.target);
         });
       },
@@ -637,7 +769,7 @@
         tx = x * 6;
         ty = -y * 6;
         sx = x * 200;
-        if (!raf) raf = requestAnimationFrame(loop);
+        if (!raf) { raf = requestAnimationFrame(loop); if (soundEnabled) playTiltSound(); }
       });
 
       card.addEventListener('pointerleave', () => {
@@ -651,6 +783,8 @@
   if (!reducedMotion) {
     $$('.capabilities-section, .method-section, .contact-section').forEach((sec) => {
       sec.classList.add('spotlight-section');
+      sec.addEventListener('pointerenter', () => { if (soundEnabled) playSpotlightStart(); });
+      sec.addEventListener('pointerleave', () => { playSpotlightStop(); });
       sec.addEventListener('pointermove', (e) => {
         const r = sec.getBoundingClientRect();
         const x = ((e.clientX - r.left) / r.width) * 100;
@@ -661,12 +795,13 @@
     });
   }
 
-  /* ── Glitch text on hero outline line ── */
+  /* ── Glitch text on hero outline line + periodic sound ── */
   if (!reducedMotion) {
     const outlineLine = $('.hero-line--outline');
     if (outlineLine) {
       outlineLine.classList.add('glitch-text');
       outlineLine.setAttribute('data-text', outlineLine.textContent);
+      setInterval(() => { if (!document.hidden && soundEnabled) playGlitchSound(); }, 3200);
     }
   }
 
@@ -707,6 +842,7 @@
             frame++;
             const current = Math.round((frame / total) * target);
             numEl.textContent = String(current).padStart(2, '0');
+            if (soundEnabled && frame % 3 === 0) playCounterTick();
             if (frame < total) requestAnimationFrame(countUp);
             else numEl.textContent = original;
           };
@@ -718,11 +854,17 @@
     });
   }
 
-  /* ── Add distortion slice to work image ── */
+  /* ── Add distortion slice to work image + sweep sound ── */
   const workVisual = $('.work-visual');
-  if (workVisual) workVisual.classList.add('distort-slice');
+  if (workVisual) {
+    workVisual.classList.add('distort-slice');
+    workVisual.addEventListener('pointerenter', () => { if (soundEnabled) playDistortionSweep(); });
+  }
 
-  /* ── Add pulse ring to CTAs ── */
-  $$('.btn-filled, .nav-cta').forEach((el) => el.classList.add('pulse-ring'));
+  /* ── Add pulse ring to CTAs + pop sound ── */
+  $$('.btn-filled, .nav-cta').forEach((el) => {
+    el.classList.add('pulse-ring');
+    el.addEventListener('pointerenter', () => { if (soundEnabled) playHoverPop(); });
+  });
 
 })();
