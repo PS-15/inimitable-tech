@@ -16,8 +16,30 @@ body {
   background: var(--bg);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 body.is-loading { overflow: hidden; }
+
+/* --- Performance: containment on sections --- */
+.section, .work-section, .capabilities-section, .method-section,
+.about-section, .coming-section, .contact-section, .footer {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+/* Images: contain intrinsic size to prevent CLS */
+img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+/* Only animate transform and opacity for GPU compositing */
+[data-reveal], .p-char, .face-human, .cap-fill, .hero-line,
+.btn, .tilt-card-inner, .face-glow, .scroll-line::after {
+  will-change: auto;
+}
 a { color: inherit; text-decoration: none; }
 button { font: inherit; border: 0; padding: 0; color: inherit; background: none; cursor: pointer; }
 img { display: block; max-width: 100%; }

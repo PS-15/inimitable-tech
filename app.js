@@ -1,5 +1,6 @@
 /* ============================================
    INIMITABLE TECH — Creative Interactive JS
+   Performance-optimized: deferred init, reduced paint
    ============================================ */
 
 (() => {
@@ -7,6 +8,8 @@
   const $ = (s, p = document) => p.querySelector(s);
   const $$ = (s, p = document) => [...p.querySelectorAll(s)];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isMobile = window.matchMedia("(max-width: 860px), (pointer: coarse)").matches;
+  const rIC = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
 
   /* ─── Custom Cursor ─── */
   if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
@@ -805,29 +808,31 @@
     }
   }
 
-  /* ── CSS floating particles in hero ── */
-  if (!reducedMotion) {
-    const hero = $('.hero');
-    if (hero) {
-      const container = document.createElement('div');
-      container.className = 'css-particles';
-      container.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 20; i++) {
-        const p = document.createElement('div');
-        p.className = 'css-particle';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.setProperty('--dur', (6 + Math.random() * 8) + 's');
-        p.style.setProperty('--delay', (Math.random() * 6) + 's');
-        p.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
-        container.appendChild(p);
+  /* ── CSS floating particles in hero (deferred, skip on mobile) ── */
+  if (!reducedMotion && !isMobile) {
+    rIC(() => {
+      const hero = $('.hero');
+      if (hero) {
+        const container = document.createElement('div');
+        container.className = 'css-particles';
+        container.setAttribute('aria-hidden', 'true');
+        for (let i = 0; i < 16; i++) {
+          const p = document.createElement('div');
+          p.className = 'css-particle';
+          p.style.left = Math.random() * 100 + '%';
+          p.style.setProperty('--dur', (6 + Math.random() * 8) + 's');
+          p.style.setProperty('--delay', (Math.random() * 6) + 's');
+          p.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+          container.appendChild(p);
+        }
+        hero.appendChild(container);
       }
-      hero.appendChild(container);
-    }
+    });
   }
 
-  /* ── Animated counters ── */
+  /* ── Animated counters (deferred) ── */
   if (!reducedMotion && 'IntersectionObserver' in window) {
-    $$('.cap-num').forEach((numEl) => {
+    rIC(() => { $$('.cap-num').forEach((numEl) => {
       const target = parseInt(numEl.textContent, 10);
       if (isNaN(target)) return;
       const original = numEl.textContent;
@@ -851,7 +856,7 @@
         });
       }, { threshold: 0.5 });
       counterObs.observe(numEl);
-    });
+    }); });
   }
 
   /* ── Add distortion slice to work image + sweep sound ── */
