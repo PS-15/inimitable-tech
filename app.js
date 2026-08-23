@@ -1,316 +1,253 @@
+/* ============================================
+   INIMITABLE TECH — Creative Interactive JS
+   ============================================ */
+
 (() => {
+  "use strict";
+  const $ = (s, p = document) => p.querySelector(s);
+  const $$ = (s, p = document) => [...p.querySelectorAll(s)];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const root = document.documentElement;
-  const loader = document.querySelector("[data-loader]");
-  const progress = document.querySelector("[data-progress]");
-  const hero = document.querySelector("[data-hero]");
-  const portrait = document.querySelector("[data-portrait]");
 
-  const finishLoading = () => {
-    window.setTimeout(() => loader?.classList.add("is-complete"), reducedMotion ? 0 : 620);
-  };
+  /* ─── Custom Cursor ─── */
+  if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    const cursor = $("#cursor");
+    const dot = $(".cursor-dot");
+    const ring = $(".cursor-ring");
+    const cursorText = $("#cursor-text");
+    let cx = 0, cy = 0, tx = 0, ty = 0;
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", finishLoading, { once: true });
-  } else {
-    finishLoading();
+    const loop = () => {
+      cx += (tx - cx) * 0.15;
+      cy += (ty - cy) * 0.15;
+      cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      requestAnimationFrame(loop);
+    };
+
+    document.addEventListener("mousemove", (e) => {
+      tx = e.clientX;
+      ty = e.clientY;
+    });
+
+    document.addEventListener("mousedown", () => cursor.classList.add("is-clicking"));
+    document.addEventListener("mouseup", () => cursor.classList.remove("is-clicking"));
+
+    $$("[data-cursor]").forEach((el) => {
+      const label = el.getAttribute("data-cursor");
+      el.addEventListener("mouseenter", () => {
+        cursor.classList.add("is-hovering");
+        cursorText.textContent = label;
+      });
+      el.addEventListener("mouseleave", () => {
+        cursor.classList.remove("is-hovering");
+      });
+    });
+
+    loop();
   }
 
-  const menu = document.querySelector("[data-menu]");
-  const openButton = document.querySelector("[data-menu-open]");
-  const closeButton = document.querySelector("[data-menu-close]");
-  let menuReturnFocus = null;
+  /* ─── Mesh Gradient Background ─── */
+  const meshCanvas = $("#mesh-bg");
+  if (meshCanvas instanceof HTMLCanvasElement && !reducedMotion) {
+    const ctx = meshCanvas.getContext("2d");
+    if (!ctx) return;
 
-  const setMenu = (open, restoreFocus = true) => {
-    if (!menu || !openButton) return;
-    menu.classList.toggle("is-open", open);
-    menu.setAttribute("aria-hidden", String(!open));
-    menu.inert = !open;
-    openButton.setAttribute("aria-expanded", String(open));
-    document.body.classList.toggle("menu-open", open);
-    if (open) {
-      menuReturnFocus = document.activeElement;
-      closeButton?.focus();
-    } else if (restoreFocus && menuReturnFocus instanceof HTMLElement) {
-      menuReturnFocus.focus();
-    }
+    let w = 0, h = 0;
+    let mouse = { x: 0.5, y: 0.5 };
+    const isDark = () => document.documentElement.getAttribute("data-theme") === "dark";
+
+    const resize = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      meshCanvas.width = w;
+      meshCanvas.height = h;
+    };
+
+    window.addEventListener("resize", resize, { passive: true });
+    document.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX / w;
+      mouse.y = e.clientY / h;
+    }, { passive: true });
+    resize();
+
+    // Animated blobs
+    const blobs = [
+      { x: 0.3, y: 0.3, r: 250, color: [200, 255, 0], speed: 0.0008, phase: 0 },
+      { x: 0.7, y: 0.6, r: 200, color: [0, 255, 136], speed: 0.0006, phase: 2 },
+      { x: 0.5, y: 0.8, r: 180, color: [100, 100, 255], speed: 0.001, phase: 4 },
+      { x: 0.2, y: 0.7, r: 160, color: [255, 100, 200], speed: 0.0007, phase: 1 },
+    ];
+
+    let lastTime = 0;
+    const draw = (time) => {
+      if (document.hidden) { requestAnimationFrame(draw); return; }
+      const delta = Math.min(30, time - lastTime);
+      lastTime = time;
+
+      const dark = isDark();
+      ctx.fillStyle = dark ? "#0a0a0a" : "#f5f3ee";
+      ctx.fillRect(0, 0, w, h);
+
+      blobs.forEach((b) => {
+        const ox = Math.sin(time * b.speed + b.phase) * 80 + (mouse.x - 0.5) * 60;
+        const oy = Math.cos(time * b.speed * 0.7 + b.phase) * 60 + (mouse.y - 0.5) * 40;
+        const x = b.x * w + ox;
+        const y = b.y * h + oy;
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, b.r);
+        const [r, g, bl] = b.color;
+        gradient.addColorStop(0, `rgba(${r},${g},${bl},${dark ? 0.12 : 0.08})`);
+        gradient.addColorStop(1, `rgba(${r},${g},${bl},0)`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+      });
+
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  }
+
+  /* ─── Loader ─── */
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      document.body.style.opacity = "1";
+    }, reducedMotion ? 0 : 300);
+  });
+  document.body.style.opacity = "0";
+  document.body.style.transition = "opacity 0.6s ease";
+
+  /* ─── Mobile Menu ─── */
+  const menuToggle = $("#menu-toggle");
+  const menuClose = $("#menu-close");
+  const mobileMenu = $("#mobile-menu");
+
+  const toggleMenu = (open) => {
+    mobileMenu?.classList.toggle("is-open", open);
+    mobileMenu?.setAttribute("aria-hidden", String(!open));
+    menuToggle?.setAttribute("aria-expanded", String(open));
+    document.body.style.overflow = open ? "hidden" : "";
   };
 
-  openButton?.addEventListener("click", () => setMenu(true));
-  closeButton?.addEventListener("click", () => setMenu(false));
-  menu?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setMenu(false, false)));
-  window.addEventListener("keydown", (event) => {
-    if (!menu?.classList.contains("is-open")) return;
-    if (event.key === "Escape") {
-      setMenu(false);
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const focusable = [...menu.querySelectorAll("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])")]
-      .filter((element) => element instanceof HTMLElement && !element.hidden);
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+  menuToggle?.addEventListener("click", () => toggleMenu(true));
+  menuClose?.addEventListener("click", () => toggleMenu(false));
+  $$(".mobile-menu-links a").forEach((a) => a.addEventListener("click", () => toggleMenu(false)));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") toggleMenu(false);
   });
 
-  const updateScroll = () => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const ratio = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-    if (progress) progress.style.transform = `scaleY(${ratio})`;
-
-    if (hero) {
-      const heroTravel = Math.min(hero.offsetHeight, Math.max(0, window.scrollY));
-      root.style.setProperty("--hero-shift", String(heroTravel));
-    }
-  };
-
-  let scrollTicking = false;
+  /* ─── Nav hide/show on scroll ─── */
+  let lastY = 0;
+  const nav = $("#nav");
   window.addEventListener("scroll", () => {
-    if (scrollTicking) return;
-    scrollTicking = true;
-    requestAnimationFrame(() => {
-      updateScroll();
-      scrollTicking = false;
-    });
+    const y = window.scrollY;
+    nav?.classList.toggle("is-hidden", y > lastY && y > 200);
+    lastY = y;
   }, { passive: true });
-  updateScroll();
 
-  const reveals = [...document.querySelectorAll(".reveal")];
+  /* ─── Reveal on scroll ─── */
+  const revealEls = $$("[data-reveal]");
   if (reducedMotion || !("IntersectionObserver" in window)) {
-    reveals.forEach((item) => item.classList.add("is-visible"));
+    revealEls.forEach((el) => el.classList.add("is-visible"));
   } else {
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.13, rootMargin: "0px 0px -5% 0px" });
-    reveals.forEach((item) => revealObserver.observe(item));
+    const obs = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    revealEls.forEach((el) => obs.observe(el));
   }
 
-  if (!reducedMotion && portrait && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-    let portraitTarget = 0;
-    let portraitCurrent = 0;
-    const portraitLoop = () => {
-      portraitCurrent += (portraitTarget - portraitCurrent) * 0.075;
-      root.style.setProperty("--portrait-x", `${portraitCurrent}px`);
-      requestAnimationFrame(portraitLoop);
-    };
-    window.addEventListener("pointermove", (event) => {
-      portraitTarget = ((event.clientX / window.innerWidth) - 0.5) * 18;
-    }, { passive: true });
-    portraitLoop();
-  }
-
-  const scrambleNode = document.querySelector("[data-scramble]");
-  if (scrambleNode && !reducedMotion) {
-    const words = ["PRESENCE", "CLARITY", "MEMORY", "PROOF"];
-    const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/×";
-    let wordIndex = 0;
-
-    const scrambleTo = (word) => {
-      let frame = 0;
-      const total = 24;
-      const render = () => {
-        const settled = Math.floor((frame / total) * word.length);
-        scrambleNode.textContent = [...word].map((letter, index) => {
-          if (index < settled) return letter;
-          return glyphs[Math.floor(Math.random() * glyphs.length)];
-        }).join("");
-        frame += 1;
-        if (frame <= total) requestAnimationFrame(render);
-        else scrambleNode.textContent = word;
-      };
-      render();
-    };
-
-    window.setInterval(() => {
-      if (document.hidden) return;
-      wordIndex = (wordIndex + 1) % words.length;
-      scrambleTo(words[wordIndex]);
-    }, 3200);
-  }
-
-  const inspector = document.querySelector("[data-project-inspector]");
-  if (inspector) {
-    const tabs = [...inspector.querySelectorAll("[data-project-tab]")];
-    const panels = [...inspector.querySelectorAll("[data-project-panel]")];
-    const counter = inspector.querySelector(".project-inspector-head span:last-child");
-    const activateTab = (tab, moveFocus = false) => {
-      const key = tab.getAttribute("data-project-tab");
-      tabs.forEach((item) => {
-        const selected = item === tab;
-        item.setAttribute("aria-selected", String(selected));
-        item.tabIndex = selected ? 0 : -1;
-      });
-      panels.forEach((panel) => { panel.hidden = panel.getAttribute("data-project-panel") !== key; });
-      if (counter) counter.textContent = `${String(tabs.indexOf(tab) + 1).padStart(2, "0")} / ${String(tabs.length).padStart(2, "0")}`;
-      if (moveFocus) tab.focus();
-    };
-
-    tabs.forEach((tab, index) => {
-      tab.addEventListener("click", () => activateTab(tab));
-      tab.addEventListener("keydown", (event) => {
-        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-        event.preventDefault();
-        let next = index;
-        if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
-        if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-        if (event.key === "Home") next = 0;
-        if (event.key === "End") next = tabs.length - 1;
-        activateTab(tabs[next], true);
-      });
+  /* ─── Inspector Tabs ─── */
+  $$(".inspector-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const key = tab.getAttribute("data-tab");
+      const parent = tab.closest(".work-inspector");
+      if (!parent) return;
+      $$(".inspector-tab", parent).forEach((t) => t.classList.remove("active"));
+      $$(".inspector-panel", parent).forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      parent.querySelector(`[data-panel="${key}"]`)?.classList.add("active");
     });
-  }
+  });
 
+  /* ─── Text Scramble Effect ─── */
   if (!reducedMotion) {
-    document.querySelectorAll(".magnetic").forEach((element) => {
-      element.addEventListener("pointermove", (event) => {
-        const rect = element.getBoundingClientRect();
-        const x = event.clientX - rect.left - rect.width / 2;
-        const y = event.clientY - rect.top - rect.height / 2;
-        element.style.transform = `translate(${x * 0.1}px, ${y * 0.12}px)`;
+    const scrambleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/×@#$%";
+    const scrambleNodes = $$(".hero-line--accent, .hero-line--outline");
+
+    scrambleNodes.forEach((node) => {
+      const original = node.textContent;
+      let frame = 0;
+      const total = 16;
+
+      const scramble = () => {
+        node.textContent = [...original].map((ch, i) => {
+          if (i < Math.floor((frame / total) * original.length)) return ch;
+          return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+        }).join("");
+        frame++;
+        if (frame <= total) requestAnimationFrame(scramble);
+        else node.textContent = original;
+      };
+
+      // Initial scramble after reveal
+      setTimeout(scramble, 1200);
+
+      // Periodic re-scramble
+      setInterval(() => {
+        if (!document.hidden) scramble();
+      }, 6000);
+    });
+  }
+
+  /* ─── Smooth Anchor Links ─── */
+  $$('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      const id = link.getAttribute("href");
+      if (!id || id === "#") return;
+      const target = document.querySelector(id);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
+      }
+    });
+  });
+
+  /* ─── Magnetic Effect on Buttons ─── */
+  if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    $$(".btn, .nav-cta, .brand-block").forEach((el) => {
+      el.addEventListener("pointermove", (e) => {
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        el.style.transform = `translate(${x * 0.12}px, ${y * 0.14}px)`;
       });
-      element.addEventListener("pointerleave", () => {
-        element.style.transform = "translate(0, 0)";
+      el.addEventListener("pointerleave", () => {
+        el.style.transform = "";
       });
     });
   }
 
-  const canvas = document.querySelector("[data-signal-field]");
-  const lightweightViewport = window.matchMedia("(max-width: 860px), (pointer: coarse)").matches;
-  if (!(canvas instanceof HTMLCanvasElement) || reducedMotion || lightweightViewport) return;
+  /* ─── Parallax on scroll for hero elements ─── */
+  if (!reducedMotion) {
+    const heroTitle = $(".hero-title");
+    const heroPortrait = $(".portrait-frame");
+    const heroTags = $(".hero-tags-float");
 
-  const context = canvas.getContext("2d", { alpha: false });
-  if (!context) return;
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY;
+      const vh = window.innerHeight;
+      if (y > vh) return;
 
-  let width = 0;
-  let height = 0;
-  let dpr = 1;
-  let particles = [];
-  let traces = [];
-  const pointer = { x: -9999, y: -9999, active: false };
+      const ratio = y / vh;
+      if (heroTitle) heroTitle.style.transform = `translateY(${ratio * 60}px)`;
+      if (heroPortrait) heroPortrait.style.transform = `translateY(${ratio * -30}px) scale(${1 - ratio * 0.04})`;
+      if (heroTags) heroTags.style.transform = `translateX(-50%) translateY(${ratio * 40}px)`;
+      if (heroTags) heroTags.style.opacity = String(1 - ratio * 2);
+    }, { passive: true });
+  }
 
-  const randomBetween = (min, max) => min + Math.random() * (max - min);
-
-  const buildField = () => {
-    const area = width * height;
-    const particleCount = Math.max(320, Math.min(900, Math.floor(area / 1800)));
-    const traceCount = Math.max(14, Math.min(32, Math.floor(width / 40)));
-
-    particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      originX: Math.random() * width,
-      originY: Math.random() * height,
-      depth: randomBetween(0.25, 1),
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    particles.forEach((point) => {
-      point.originX = point.x;
-      point.originY = point.y;
-    });
-
-    traces = Array.from({ length: traceCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      length: randomBetween(35, 150),
-      speed: randomBetween(0.35, 1.35),
-      opacity: randomBetween(0.06, 0.22),
-      angle: randomBetween(-0.18, 0.18),
-    }));
-  };
-
-  const resize = () => {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildField();
-  };
-
-  window.addEventListener("resize", resize, { passive: true });
-  window.addEventListener("pointermove", (event) => {
-    pointer.x = event.clientX;
-    pointer.y = event.clientY;
-    pointer.active = true;
-  }, { passive: true });
-  window.addEventListener("pointerleave", () => { pointer.active = false; });
-  resize();
-
-  let last = performance.now();
-  const draw = (time) => {
-    if (document.hidden) {
-      last = time;
-      requestAnimationFrame(draw);
-      return;
-    }
-    const delta = Math.min(2, (time - last) / 16.67);
-    last = time;
-    context.fillStyle = "#050f1d";
-    context.fillRect(0, 0, width, height);
-
-    context.lineWidth = 0.7;
-    traces.forEach((trace) => {
-      trace.y -= trace.speed * delta;
-      trace.x += trace.angle * trace.speed * delta;
-      if (trace.y < -trace.length) {
-        trace.y = height + trace.length;
-        trace.x = Math.random() * width;
-      }
-      context.beginPath();
-      context.moveTo(trace.x, trace.y);
-      context.lineTo(trace.x + trace.angle * trace.length, trace.y + trace.length);
-      context.strokeStyle = `rgba(102, 163, 255, ${trace.opacity})`;
-      context.stroke();
-    });
-
-    particles.forEach((point) => {
-      const driftX = Math.sin(time * 0.00023 + point.phase) * 5 * point.depth;
-      const driftY = Math.cos(time * 0.00018 + point.phase) * 4 * point.depth;
-      let targetX = point.originX + driftX;
-      let targetY = point.originY + driftY;
-      let influence = 0;
-
-      if (pointer.active) {
-        const dx = targetX - pointer.x;
-        const dy = targetY - pointer.y;
-        const distance = Math.hypot(dx, dy);
-        const radius = 115;
-        if (distance < radius && distance > 0.01) {
-          influence = 1 - distance / radius;
-          targetX += (dx / distance) * influence * 42;
-          targetY += (dy / distance) * influence * 42;
-        }
-      }
-
-      point.x += (targetX - point.x) * 0.08;
-      point.y += (targetY - point.y) * 0.08;
-      const alpha = 0.16 + point.depth * 0.42 + influence * 0.38;
-      const size = 0.45 + point.depth * 1.1 + influence * 0.8;
-      context.beginPath();
-      context.arc(point.x, point.y, size, 0, Math.PI * 2);
-      context.fillStyle = influence > 0.12
-        ? `rgba(102, 163, 255, ${alpha})`
-        : `rgba(190, 207, 225, ${alpha})`;
-      context.fill();
-    });
-
-    requestAnimationFrame(draw);
-  };
-
-  requestAnimationFrame(draw);
 })();
