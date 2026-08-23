@@ -105,7 +105,9 @@
     requestAnimationFrame(draw);
   }
 
-  /* ─── Lando-Norris-style Preloader ─── */
+  /* ═══════════════════════════════════════════════
+     LANDO-NORRIS-STYLE PRELOADER + PROCEDURAL AUDIO
+     ═══════════════════════════════════════════════ */
   const preloader = $("#preloader");
   const chars = $$(".p-char");
   const preSub = $("#preloader-sub");
@@ -120,13 +122,135 @@
   document.body.classList.add("is-loading");
   if (mainContent) mainContent.style.opacity = "0";
 
+  /* ── Procedural Audio Engine (Web Audio API) ── */
+  let audioCtx = null;
+  const initAudio = () => {
+    if (audioCtx) return audioCtx;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) { /* audio not supported */ }
+    return audioCtx;
+  };
+
+  // Deep bass sweep — plays once at preloader start
+  const playSweep = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(60, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 1.2);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 1.6);
+  };
+
+  // Click / typewriter tick — plays per character
+  const playClick = (index) => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    // Slight pitch variation per character for realism
+    osc.frequency.setValueAtTime(800 + index * 40, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400 + index * 20, ctx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.07);
+  };
+
+  // Ambient pad — plays during progress bar fill
+  let padOsc1, padOsc2, padGain;
+  const startPad = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    padGain = ctx.createGain();
+    padGain.gain.setValueAtTime(0, ctx.currentTime);
+    padGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.8);
+    padGain.connect(ctx.destination);
+    padOsc1 = ctx.createOscillator();
+    padOsc1.type = "sine";
+    padOsc1.frequency.setValueAtTime(220, ctx.currentTime);
+    padOsc1.connect(padGain);
+    padOsc1.start();
+    padOsc2 = ctx.createOscillator();
+    padOsc2.type = "sine";
+    padOsc2.frequency.setValueAtTime(330, ctx.currentTime);
+    padOsc2.connect(padGain);
+    padOsc2.start();
+  };
+  const stopPad = () => {
+    if (!audioCtx || !padGain) return;
+    padGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+    setTimeout(() => {
+      try { padOsc1?.stop(); padOsc2?.stop(); } catch(e) {}
+    }, 500);
+  };
+
+  // Completion chime — two-note chord
+  const playChime = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    [523, 659].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + 1);
+    });
+  };
+
+  // Deep whoosh — plays at curtain reveal
+  const playWhoosh = () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    const bufSize = ctx.sampleRate * 0.5;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(200, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.3);
+    filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
+    filter.Q.setValueAtTime(1.5, ctx.currentTime);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.start();
+  };
+
+  /* ── Preloader orchestration ── */
   const dismissPreloader = () => {
     if (loadDone) return;
     loadDone = true;
 
-    // Phase 1: stagger each character in with a wave
+    // Start sweep + audio context on first user gesture (or auto)
+    safePlaySweep();
+
+    // Phase 1: stagger each character in with a wave + click sounds
     chars.forEach((ch, i) => {
-      setTimeout(() => ch.classList.add("is-in"), 120 + i * 80);
+      setTimeout(() => {
+        ch.classList.add("is-in");
+        safePlayClick(i);
+      }, 120 + i * 80);
     });
 
     // Phase 2: show subtitle + progress after chars land
@@ -136,12 +260,14 @@
       preProgress?.classList.add("is-in");
     }, charsDone);
 
-    // Phase 3: animate progress bar 0 → 100
+    // Phase 3: animate progress bar 0 → 100 with ambient pad
     const progressStart = charsDone + 200;
     const progressDur = 1400;
     let pStart = 0;
+    let padStarted = false;
     const tickProgress = (ts) => {
       if (!pStart) pStart = ts;
+      if (!padStarted) { safeStartPad(); padStarted = true; }
       const elapsed = ts - pStart;
       const pct = Math.min(100, Math.round((elapsed / progressDur) * 100));
       if (preFill) preFill.style.width = pct + "%";
@@ -153,6 +279,9 @@
   };
 
   const finishPreloader = () => {
+    safeStopPad();
+    safePlayChime();
+
     // Phase 4: wave-out each character
     chars.forEach((ch, i) => {
       setTimeout(() => {
@@ -162,9 +291,10 @@
       }, i * 50);
     });
 
-    // Phase 5: curtain wipe + reveal main content
+    // Phase 5: curtain wipe + reveal main content with whoosh
     const waveOutDur = 100 + chars.length * 50 + 400;
     setTimeout(() => {
+      safePlayWhoosh();
       curtain?.classList.add("is-up");
     }, waveOutDur);
 
@@ -172,11 +302,29 @@
       preloader?.classList.add("is-done");
       document.body.classList.remove("is-loading");
       if (mainContent) {
-        mainContent.style.transition = "opacity 0.5s ease";
+        mainContent.style.transition = "opacity 0.6s ease";
         mainContent.style.opacity = "1";
       }
-    }, waveOutDur + 900);
+    }, waveOutDur + 950);
   };
+
+  /* ── Sound toggle ── */
+  let soundEnabled = true;
+  const soundBtn = $("#preloader-sound");
+  const soundOn = $(".sound-on");
+  const soundOff = $(".sound-off");
+  soundBtn?.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    if (soundOn) soundOn.style.display = soundEnabled ? "block" : "none";
+    if (soundOff) soundOff.style.display = soundEnabled ? "none" : "block";
+  });
+  // Safe wrappers that respect the toggle
+  const safePlaySweep = () => { if (soundEnabled) playSweep(); };
+  const safePlayClick = (i) => { if (soundEnabled) playClick(i); };
+  const safePlayChime = () => { if (soundEnabled) playChime(); };
+  const safePlayWhoosh = () => { if (soundEnabled) playWhoosh(); };
+  const safeStartPad = () => { if (soundEnabled) startPad(); };
+  const safeStopPad = () => { stopPad(); };
 
   // Kick off after fonts + critical resources are ready
   if (document.readyState === "complete") {

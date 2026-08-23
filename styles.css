@@ -231,7 +231,7 @@ html[data-theme="light"] {
   pointer-events: none;
 }
 
-/* Corner marks */
+/* Corner marks — Swiss Design grid accents */
 .preloader::after {
   content: '';
   position: absolute;
@@ -239,20 +239,73 @@ html[data-theme="light"] {
   right: 24px;
   width: 48px;
   height: 48px;
-  border-top: 1px solid #333;
-  border-right: 1px solid #333;
+  border-top: 1.5px solid #d4ff00;
+  border-right: 1.5px solid #d4ff00;
   pointer-events: none;
   opacity: 0;
   animation: preloader-corner 0.4s 0.2s forwards;
 }
 @keyframes preloader-corner {
-  to { opacity: 1; }
+  to { opacity: 0.6; }
+}
+/* Bottom-left corner mark */
+.preloader-inner::before {
+  content: '';
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 48px;
+  height: 48px;
+  border-bottom: 1.5px solid #d4ff00;
+  border-left: 1.5px solid #d4ff00;
+  pointer-events: none;
+  opacity: 0;
+  animation: preloader-corner 0.4s 0.3s forwards;
+}
+/* Version tag — Brutalist label */
+.preloader-inner::after {
+  content: 'REV 0.4';
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #333;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* Sound toggle */
+.preloader-sound {
+  position: fixed;
+  top: 28px;
+  left: 28px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #333;
+  color: #5a5650;
+  transition: border-color 0.3s, color 0.3s;
+}
+.preloader-sound:hover {
+  border-color: #d4ff00;
+  color: #d4ff00;
+}
+.preloader-sound svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Loading screen responsive */
 @media (max-width: 640px) {
   .preloader-sub { font-size: 8px; gap: 10px; }
   .preloader-progress-track { width: 140px; }
+  .preloader-sound { top: 16px; left: 16px; width: 32px; height: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -541,6 +594,7 @@ html[data-theme="light"] {
 
 /* ============================================
    HERO — 60% Dominant background
+   Blends: Editorial Design + Swiss Grid + Wabi Sabi
    ============================================ */
 .hero {
   position: relative;
@@ -549,6 +603,42 @@ html[data-theme="light"] {
   align-items: center;
   padding-top: 64px;
   overflow: hidden;
+}
+/* Swiss Design: subtle grid overlay */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image:
+    linear-gradient(var(--accent) 1px, transparent 1px),
+    linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+  background-size: 6.25vw 6.25vw;
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+}
+/* Wabi Sabi: imperfect organic blob */
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 45vw;
+  height: 45vw;
+  right: -8vw;
+  top: 50%;
+  transform: translateY(-50%) rotate(12deg);
+  border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%;
+  border: 1px solid var(--border);
+  opacity: 0.3;
+  pointer-events: none;
+  animation: blob-morph 20s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes blob-morph {
+  0%, 100% { border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%; }
+  33% { border-radius: 44% 56% 52% 48% / 48% 58% 42% 52%; }
+  66% { border-radius: 54% 46% 38% 62% / 52% 42% 58% 48%; }
 }
 .hero-grid {
   display: grid;
@@ -1511,15 +1601,13 @@ html[data-theme="light"] {
 }
 
 /* ============================================
-   FOOTER
-   ============================================ */
-/* ============================================
    FOOTER — 60% Dominant background
+   Blends: Neo-Brutalism + Swiss Design
    ============================================ */
 .footer {
   position: relative;
   z-index: 2;
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
   background: var(--bg);
 }
 .footer-inner {
