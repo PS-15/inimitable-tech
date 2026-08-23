@@ -232,9 +232,42 @@
     filter.Q.setValueAtTime(1.5, ctx.currentTime);
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    src.connect(filter).connect(gain).connect(ctx.destination);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);    src.connect(filter).connect(gain).connect(ctx.destination);
     src.start();
+  };
+
+  // Digital scan sound — plays on face hover
+  let scanOsc = null;
+  let scanGain = null;
+  const playScanStart = () => {
+    const ctx = initAudio();
+    if (!ctx || scanOsc) return;
+    scanGain = ctx.createGain();
+    scanGain.gain.setValueAtTime(0, ctx.currentTime);
+    scanGain.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.3);
+    scanGain.connect(ctx.destination);
+    scanOsc = ctx.createOscillator();
+    scanOsc.type = "sawtooth";
+    scanOsc.frequency.setValueAtTime(120, ctx.currentTime);
+    // Slow modulation
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.5;
+    lfoGain.gain.value = 40;
+    lfo.connect(lfoGain).connect(scanOsc.frequency);
+    lfo.start();
+    scanOsc.connect(scanGain);
+    scanOsc.start();
+    scanOsc._lfo = lfo;
+  };
+  const playScanStop = () => {
+    if (!audioCtx || !scanGain) return;
+    scanGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+    setTimeout(() => {
+      try { scanOsc?._lfo?.stop(); scanOsc?.stop(); } catch(e) {}
+      scanOsc = null;
+      scanGain = null;
+    }, 350);
   };
 
   /* ── Preloader orchestration ── */
@@ -356,6 +389,110 @@
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") toggleMenu(false);
   });
+
+  /* ─── Robot Face Reveal Effect ─── */
+  const faceReveal = $("#face-reveal");
+  const faceHuman = $("#face-human");
+  const faceGlow = $("#face-glow");
+  const robotCircuit = $("#robot-circuit");
+
+  if (faceReveal && faceHuman && window.matchMedia("(pointer: fine)").matches) {
+    let mx = 50, my = 50; // percentage
+    let tx = 50, ty = 50;
+    let revealRadius = 0;
+    let targetRadius = 0;
+    let isInside = false;
+    let rafId = null;
+
+    // Smooth lerp loop
+    const lerpFace = () => {
+      mx += (tx - mx) * 0.12;
+      my += (ty - my) * 0.12;
+      revealRadius += (targetRadius - revealRadius) * 0.1;
+      faceHuman.style.clipPath = `circle(${revealRadius}% at ${mx}% ${my}%)`;
+      faceHuman.style.setProperty("--mx", mx + "%");
+      faceHuman.style.setProperty("--my", my + "%");
+      rafId = requestAnimationFrame(lerpFace);
+    };
+
+    faceReveal.addEventListener("pointerenter", () => {
+      isInside = true;
+      faceReveal.classList.add("is-hovered");
+      targetRadius = 38;
+      if (!rafId) rafId = requestAnimationFrame(lerpFace);
+      if (soundEnabled) playScanStart();
+    });
+
+    faceReveal.addEventListener("pointerleave", () => {
+      isInside = false;
+      faceReveal.classList.remove("is-hovered");
+      targetRadius = 0;
+      tx = 50;
+      ty = 50;
+      playScanStop();
+    });
+
+    faceReveal.addEventListener("pointermove", (e) => {
+      if (!isInside) return;
+      const rect = faceReveal.getBoundingClientRect();
+      tx = ((e.clientX - rect.left) / rect.width) * 100;
+      ty = ((e.clientY - rect.top) / rect.height) * 100;
+      if (faceGlow) {
+        faceGlow.style.left = tx + "%";
+        faceGlow.style.top = ty + "%";
+      }
+    });
+  }
+
+  // Draw circuit pattern on robot face canvas
+  if (robotCircuit) {
+    const ctx = robotCircuit.getContext("2d");
+    if (ctx) {
+      const drawCircuit = () => {
+        const w = robotCircuit.width = robotCircuit.offsetWidth;
+        const h = robotCircuit.height = robotCircuit.offsetHeight;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = "rgba(212,255,0,0.35)";
+        ctx.lineWidth = 0.8;
+
+        // Horizontal lines
+        for (let i = 0; i < 12; i++) {
+          const y = (h / 12) * i + Math.random() * 20;
+          const x1 = Math.random() * w * 0.3;
+          const x2 = x1 + Math.random() * w * 0.5 + 40;
+          ctx.beginPath();
+          ctx.moveTo(x1, y);
+          ctx.lineTo(x2, y);
+          ctx.stroke();
+          // Dot at end
+          ctx.beginPath();
+          ctx.arc(x2, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(212,255,0,0.5)";
+          ctx.fill();
+        }
+
+        // Vertical lines
+        for (let i = 0; i < 6; i++) {
+          const x = (w / 6) * i + Math.random() * 30;
+          const y1 = Math.random() * h * 0.3;
+          const y2 = y1 + Math.random() * h * 0.4 + 30;
+          ctx.beginPath();
+          ctx.moveTo(x, y1);
+          ctx.lineTo(x, y2);
+          ctx.stroke();
+        }
+
+        // Small squares (chip nodes)
+        for (let i = 0; i < 8; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const s = 4 + Math.random() * 6;
+          ctx.strokeRect(x, y, s, s);
+        }
+      };
+      drawCircuit();
+    }
+  }
 
   /* ─── Nav hide/show on scroll ─── */
   let lastY = 0;

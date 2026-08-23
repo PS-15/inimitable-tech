@@ -129,9 +129,28 @@
         <!-- Right: portrait + status -->
         <div class="hero-right">
           <div class="hero-portrait-wrap">
-            <div class="portrait-frame" data-tilt>
-              <img src="./sahil-portrait-blue-v4.webp" alt="Sahil Kanojiya" width="600" height="900" fetchpriority="high" />
-              <div class="portrait-glitch" aria-hidden="true"></div>
+            <!-- Robot Face Reveal Effect -->
+            <div class="face-reveal" id="face-reveal" data-face-reveal>
+              <!-- Layer 1: Robot face (base — always visible) -->
+              <div class="face-layer face-robot">
+                <img src="./sahil-portrait-blue-v4.webp" alt="" width="600" height="900" fetchpriority="high" />
+                <div class="robot-overlay" aria-hidden="true"></div>
+                <canvas class="robot-circuit" id="robot-circuit" aria-hidden="true"></canvas>
+              </div>
+              <!-- Layer 2: Real face (revealed by cursor mask) -->
+              <div class="face-layer face-human" id="face-human">
+                <img src="./sahil-portrait-blue-v4.webp" alt="Sahil Kanojiya" width="600" height="900" fetchpriority="high" />
+              </div>
+              <!-- Cursor glow ring -->
+              <div class="face-glow" id="face-glow" aria-hidden="true"></div>
+              <!-- Corner brackets -->
+              <div class="face-bracket face-bracket--tl" aria-hidden="true"></div>
+              <div class="face-bracket face-bracket--br" aria-hidden="true"></div>
+              <!-- Label -->
+              <div class="face-status">
+                <span class="face-status-dot"></span>
+                <span>HOVER TO REVEAL</span>
+              </div>
             </div>
             <div class="portrait-label">
               <span>SAHIL KANOJIYA</span>
