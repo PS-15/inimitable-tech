@@ -105,14 +105,90 @@
     requestAnimationFrame(draw);
   }
 
-  /* ─── Loader ─── */
-  window.addEventListener("load", () => {
+  /* ─── Lando-Norris-style Preloader ─── */
+  const preloader = $("#preloader");
+  const chars = $$(".p-char");
+  const preSub = $("#preloader-sub");
+  const preProgress = $(".preloader-progress");
+  const preFill = $("#preloader-fill");
+  const prePercent = $("#preloader-percent");
+  const curtain = $("#preloader-curtain");
+  const mainContent = $("#main");
+  let loadDone = false;
+
+  // Lock scroll during preloader
+  document.body.classList.add("is-loading");
+  if (mainContent) mainContent.style.opacity = "0";
+
+  const dismissPreloader = () => {
+    if (loadDone) return;
+    loadDone = true;
+
+    // Phase 1: stagger each character in with a wave
+    chars.forEach((ch, i) => {
+      setTimeout(() => ch.classList.add("is-in"), 120 + i * 80);
+    });
+
+    // Phase 2: show subtitle + progress after chars land
+    const charsDone = 120 + chars.length * 80 + 400;
     setTimeout(() => {
-      document.body.style.opacity = "1";
-    }, reducedMotion ? 0 : 300);
-  });
-  document.body.style.opacity = "0";
-  document.body.style.transition = "opacity 0.6s ease";
+      preSub?.classList.add("is-in");
+      preProgress?.classList.add("is-in");
+    }, charsDone);
+
+    // Phase 3: animate progress bar 0 → 100
+    const progressStart = charsDone + 200;
+    const progressDur = 1400;
+    let pStart = 0;
+    const tickProgress = (ts) => {
+      if (!pStart) pStart = ts;
+      const elapsed = ts - pStart;
+      const pct = Math.min(100, Math.round((elapsed / progressDur) * 100));
+      if (preFill) preFill.style.width = pct + "%";
+      if (prePercent) prePercent.textContent = pct;
+      if (pct < 100) requestAnimationFrame(tickProgress);
+      else finishPreloader();
+    };
+    setTimeout(() => requestAnimationFrame(tickProgress), progressStart);
+  };
+
+  const finishPreloader = () => {
+    // Phase 4: wave-out each character
+    chars.forEach((ch, i) => {
+      setTimeout(() => {
+        ch.style.transition = "transform 0.5s var(--ease), opacity 0.35s";
+        ch.style.transform = "translateY(-110%)";
+        ch.style.opacity = "0";
+      }, i * 50);
+    });
+
+    // Phase 5: curtain wipe + reveal main content
+    const waveOutDur = 100 + chars.length * 50 + 400;
+    setTimeout(() => {
+      curtain?.classList.add("is-up");
+    }, waveOutDur);
+
+    setTimeout(() => {
+      preloader?.classList.add("is-done");
+      document.body.classList.remove("is-loading");
+      if (mainContent) {
+        mainContent.style.transition = "opacity 0.5s ease";
+        mainContent.style.opacity = "1";
+      }
+    }, waveOutDur + 900);
+  };
+
+  // Kick off after fonts + critical resources are ready
+  if (document.readyState === "complete") {
+    setTimeout(dismissPreloader, 200);
+  } else {
+    window.addEventListener("load", () => setTimeout(dismissPreloader, 200), { once: true });
+  }
+
+  // Safety: dismiss after 5s no matter what
+  setTimeout(() => {
+    if (!loadDone) dismissPreloader();
+  }, 5000);
 
   /* ─── Mobile Menu ─── */
   const menuToggle = $("#menu-toggle");

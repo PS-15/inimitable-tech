@@ -17,6 +17,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
+body.is-loading { overflow: hidden; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; border: 0; padding: 0; color: inherit; background: none; cursor: pointer; }
 img { display: block; max-width: 100%; }
@@ -86,6 +87,178 @@ html[data-theme="light"] {
   --border-strong: rgba(26,24,22,0.16);
   --glass: rgba(245,242,235,0.85);
   --shadow: 0 24px 80px rgba(0,0,0,0.08);
+}
+
+/* ============================================
+   LOADING SCREEN — Lando Norris-inspired
+   Split text reveal with staggered wave + curtain
+   ============================================ */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0c0c0c;
+  transition: visibility 0.1s;
+}
+.preloader.is-done {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-inner {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* ── Split Characters ── */
+.preloader-word {
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+}
+.p-char {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(52px, 10vw, 120px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #d4ff00;
+  text-transform: uppercase;
+  transform: translateY(110%);
+  opacity: 0;
+  transition: transform 0.7s var(--ease-out), opacity 0.5s;
+}
+.p-char.is-in {
+  transform: translateY(0);
+  opacity: 1;
+}
+/* Wave variant — each char gets a slight rotate + scale on enter */
+.p-char.is-wave {
+  transform: translateY(0) rotate(0) scale(1);
+  opacity: 1;
+}
+
+/* ── Subtitle ── */
+.preloader-sub {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #5a5650;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s 0.8s, transform 0.5s 0.8s var(--ease-out);
+}
+.preloader-sub.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.preloader-line {
+  width: 40px;
+  height: 1px;
+  background: #333;
+}
+
+/* ── Progress ── */
+.preloader-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s 1s, transform 0.4s 1s var(--ease-out);
+}
+.preloader-progress.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.preloader-progress-track {
+  width: 200px;
+  height: 1px;
+  background: #222;
+  overflow: hidden;
+}
+.preloader-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: #d4ff00;
+  transition: width 0.1s linear;
+}
+.preloader-percent {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #5a5650;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Curtain Reveal ── */
+.preloader-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--bg);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.9s var(--ease);
+}
+.preloader-curtain.is-up {
+  transform: scaleY(1);
+}
+
+/* Preloader background decorative lines */
+.preloader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(#d4ff00 1px, transparent 1px),
+    linear-gradient(90deg, #d4ff00 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+}
+
+/* Corner marks */
+.preloader::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-top: 1px solid #333;
+  border-right: 1px solid #333;
+  pointer-events: none;
+  opacity: 0;
+  animation: preloader-corner 0.4s 0.2s forwards;
+}
+@keyframes preloader-corner {
+  to { opacity: 1; }
+}
+
+/* Loading screen responsive */
+@media (max-width: 640px) {
+  .preloader-sub { font-size: 8px; gap: 10px; }
+  .preloader-progress-track { width: 140px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-char { transition: none; transform: translateY(0); opacity: 1; }
+  .preloader-sub, .preloader-progress { transition: none; opacity: 1; transform: none; }
+  .preloader-curtain { transition: none; }
 }
 
 /* ============================================
