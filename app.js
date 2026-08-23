@@ -121,8 +121,7 @@
   const mainContent = $("#main");
   let loadDone = false;
 
-  // Lock scroll during preloader
-  document.body.classList.add("is-loading");
+  // Hide main content until preloader completes
   if (mainContent) mainContent.style.opacity = "0";
 
   /* ── Procedural Audio Engine (Web Audio API) ── */
@@ -467,7 +466,6 @@
 
     setTimeout(() => {
       preloader?.classList.add("is-done");
-      document.body.classList.remove("is-loading");
       document.body.style.overflow = "";
       if (mainContent) {
         mainContent.style.transition = "opacity 0.6s ease";
