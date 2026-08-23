@@ -468,6 +468,7 @@
     setTimeout(() => {
       preloader?.classList.add("is-done");
       document.body.classList.remove("is-loading");
+      document.body.style.overflow = "";
       if (mainContent) {
         mainContent.style.transition = "opacity 0.6s ease";
         mainContent.style.opacity = "1";
