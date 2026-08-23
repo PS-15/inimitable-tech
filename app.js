@@ -735,9 +735,8 @@
     window.addEventListener("scroll", () => {
       const y = window.scrollY;
       const vh = window.innerHeight;
-      if (y > vh) return;
+      const ratio = Math.min(1, y / vh);
 
-      const ratio = y / vh;
       if (heroTitle) heroTitle.style.transform = `translateY(${ratio * 60}px)`;
       if (heroPortrait) heroPortrait.style.transform = `translateY(${ratio * -30}px) scale(${1 - ratio * 0.04})`;
       if (heroTags) heroTags.style.transform = `translateX(-50%) translateY(${ratio * 40}px)`;
