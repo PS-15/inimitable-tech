@@ -1873,6 +1873,272 @@ html[data-theme="light"] {
   .footer-tag, .footer-links, .footer-copy { width: 100%; }
 }
 
+/* ============================================
+   EXTRA EFFECTS
+   ============================================ */
+
+/* ── Glitch text effect ── */
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.glitch-text::before {
+  color: #ff0040;
+  z-index: -1;
+  animation: glitch-shift-1 3s infinite steps(2);
+}
+.glitch-text::after {
+  color: #00d4ff;
+  z-index: -1;
+  animation: glitch-shift-2 3s infinite steps(2);
+}
+@keyframes glitch-shift-1 {
+  0%, 85%, 100% { clip-path: inset(0); transform: translate(0); }
+  86% { clip-path: inset(20% 0 60% 0); transform: translate(-3px, 1px); }
+  88% { clip-path: inset(50% 0 20% 0); transform: translate(3px, -1px); }
+  90% { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 2px); }
+  92% { clip-path: inset(0); transform: translate(0); }
+}
+@keyframes glitch-shift-2 {
+  0%, 87%, 100% { clip-path: inset(0); transform: translate(0); }
+  88% { clip-path: inset(60% 0 10% 0); transform: translate(3px, -1px); }
+  90% { clip-path: inset(30% 0 40% 0); transform: translate(-3px, 1px); }
+  92% { clip-path: inset(70% 0 5% 0); transform: translate(2px, -2px); }
+  94% { clip-path: inset(0); transform: translate(0); }
+}
+
+/* ── 3D Tilt on cards ── */
+.tilt-card {
+  perspective: 800px;
+  transform-style: preserve-3d;
+}
+.tilt-card-inner {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+}
+.tilt-card:hover .tilt-card-inner {
+  transform: rotateY(var(--tilt-x, 0deg)) rotateX(var(--tilt-y, 0deg));
+}
+/* Shine overlay on tilt */
+.tilt-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(212,255,0,0.06) 45%,
+    rgba(212,255,0,0.12) 50%,
+    rgba(212,255,0,0.06) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: var(--shine-x, -100%) 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.tilt-card:hover::after {
+  opacity: 1;
+}
+
+/* ── Mouse spotlight ── */
+.spotlight-section {
+  position: relative;
+}
+.spotlight-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle 400px at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(212,255,0,0.04) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.spotlight-section:hover::before {
+  opacity: 1;
+}
+
+/* ── Animated gradient border ── */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--grad-angle, 0deg),
+    var(--accent),
+    transparent 40%,
+    transparent 60%,
+    var(--accent)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: gradient-rotate 4s linear infinite;
+}
+@keyframes gradient-rotate {
+  to { --grad-angle: 360deg; }
+}
+@property --grad-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ── Floating particles (CSS only) ── */
+.css-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.css-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: float-up var(--dur, 8s) var(--delay, 0s) linear infinite;
+}
+@keyframes float-up {
+  0% { opacity: 0; transform: translateY(100vh) translateX(0); }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-20vh) translateX(var(--drift, 30px)); }
+}
+
+/* ── Image distortion on hover ── */
+.distort-hover {
+  transition: filter 0.4s var(--ease);
+}
+.distort-hover:hover {
+  filter: saturate(1.3) contrast(1.1) hue-rotate(5deg);
+}
+/* Sliced distortion */
+.distort-slice {
+  position: relative;
+  overflow: hidden;
+}
+.distort-slice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212,255,0,0.08),
+    transparent
+  );
+  transition: left 0.6s var(--ease);
+  z-index: 4;
+  pointer-events: none;
+}
+.distort-slice:hover::before {
+  left: 130%;
+}
+
+/* ── Animated counter numbers ── */
+.counter-num {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+}
+.counter-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* ── Staggered letter reveal on scroll ── */
+.stagger-text span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+}
+.stagger-text.is-visible span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Hover underline animation ── */
+.hover-line {
+  position: relative;
+  display: inline-block;
+}
+.hover-line::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.4s var(--ease);
+}
+.hover-line:hover::after {
+  width: 100%;
+}
+
+/* ── Pulse ring on hover ── */
+.pulse-ring {
+  position: relative;
+}
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--accent);
+  border-radius: inherit;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s, transform 0.3s var(--ease);
+}
+.pulse-ring:hover::before {
+  opacity: 0.4;
+  transform: scale(1);
+  animation: pulse-ring-anim 1.5s ease-in-out infinite;
+}
+@keyframes pulse-ring-anim {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.04); opacity: 0.2; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1881,4 +2147,6 @@ html[data-theme="light"] {
   [data-reveal] { opacity: 1; transform: none; }
   .grain { animation: none; }
   .hero-line { opacity: 1; transform: none; }
+  .glitch-text::before, .glitch-text::after { animation: none; }
+  .css-particle { animation: none; }
 }

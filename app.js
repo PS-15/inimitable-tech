@@ -611,4 +611,118 @@
     }, { passive: true });
   }
 
+  /* ═══════════════════════════════════════════════
+     EXTRA EFFECTS
+     ═══════════════════════════════════════════════ */
+
+  /* ── 3D Tilt on cards ── */
+  if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    $$('.work-card, .cap-cell, .coming-card').forEach((card) => {
+      card.classList.add('tilt-card');
+      card.style.position = 'relative';
+      let raf = null;
+      let tx = 0, ty = 0, sx = -100;
+
+      const loop = () => {
+        card.style.setProperty('--tilt-x', tx + 'deg');
+        card.style.setProperty('--tilt-y', ty + 'deg');
+        card.style.setProperty('--shine-x', sx + '%');
+        raf = requestAnimationFrame(loop);
+      };
+
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        tx = x * 6;
+        ty = -y * 6;
+        sx = x * 200;
+        if (!raf) raf = requestAnimationFrame(loop);
+      });
+
+      card.addEventListener('pointerleave', () => {
+        tx = 0; ty = 0; sx = -100;
+        setTimeout(() => { cancelAnimationFrame(raf); raf = null; }, 300);
+      });
+    });
+  }
+
+  /* ── Mouse spotlight on sections ── */
+  if (!reducedMotion) {
+    $$('.capabilities-section, .method-section, .contact-section').forEach((sec) => {
+      sec.classList.add('spotlight-section');
+      sec.addEventListener('pointermove', (e) => {
+        const r = sec.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * 100;
+        const y = ((e.clientY - r.top) / r.height) * 100;
+        sec.style.setProperty('--spot-x', x + '%');
+        sec.style.setProperty('--spot-y', y + '%');
+      }, { passive: true });
+    });
+  }
+
+  /* ── Glitch text on hero outline line ── */
+  if (!reducedMotion) {
+    const outlineLine = $('.hero-line--outline');
+    if (outlineLine) {
+      outlineLine.classList.add('glitch-text');
+      outlineLine.setAttribute('data-text', outlineLine.textContent);
+    }
+  }
+
+  /* ── CSS floating particles in hero ── */
+  if (!reducedMotion) {
+    const hero = $('.hero');
+    if (hero) {
+      const container = document.createElement('div');
+      container.className = 'css-particles';
+      container.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'css-particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.setProperty('--dur', (6 + Math.random() * 8) + 's');
+        p.style.setProperty('--delay', (Math.random() * 6) + 's');
+        p.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+        container.appendChild(p);
+      }
+      hero.appendChild(container);
+    }
+  }
+
+  /* ── Animated counters ── */
+  if (!reducedMotion && 'IntersectionObserver' in window) {
+    $$('.cap-num').forEach((numEl) => {
+      const target = parseInt(numEl.textContent, 10);
+      if (isNaN(target)) return;
+      const original = numEl.textContent;
+      let counted = false;
+      const counterObs = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting || counted) return;
+          counted = true;
+          let frame = 0;
+          const total = 20;
+          const countUp = () => {
+            frame++;
+            const current = Math.round((frame / total) * target);
+            numEl.textContent = String(current).padStart(2, '0');
+            if (frame < total) requestAnimationFrame(countUp);
+            else numEl.textContent = original;
+          };
+          countUp();
+          obs.unobserve(numEl);
+        });
+      }, { threshold: 0.5 });
+      counterObs.observe(numEl);
+    });
+  }
+
+  /* ── Add distortion slice to work image ── */
+  const workVisual = $('.work-visual');
+  if (workVisual) workVisual.classList.add('distort-slice');
+
+  /* ── Add pulse ring to CTAs ── */
+  $$('.btn-filled, .nav-cta').forEach((el) => el.classList.add('pulse-ring'));
+
 })();
