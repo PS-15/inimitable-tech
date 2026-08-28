@@ -23,12 +23,16 @@ export default function Home() {
         <div className="hero-grid" aria-hidden="true" />
         <div className="hero-copy" data-reveal>
           <p className="eyebrow"><span /> Independent digital studio · Websites + SEO</p>
-          <h1>Built to be<br/><em>impossible</em><br/>to ignore.</h1>
-          <p className="hero-intro">INIMITABLE TECH designs high-performance websites and search strategies that turn attention into business.</p>
-          <PretextSignal />
-          <div className="hero-actions">
-            <a className="button primary" href="#contact">Book a strategy call <span>↗</span></a>
-            <a className="text-link" href="#work">See the work <span>↓</span></a>
+          <h1><span>MAKE YOUR</span><span className="hero-outline">SIGNAL</span><span>UNMISTAKABLE.</span></h1>
+          <div className="hero-bottomline">
+            <p className="hero-intro">INIMITABLE TECH turns a clear point of view into a digital presence people notice, understand, and remember.</p>
+            <div>
+              <PretextSignal />
+              <div className="hero-actions">
+                <a className="button primary" href="#contact">Book a strategy call <span>↗</span></a>
+                <a className="text-link" href="#work">See the work <span>↓</span></a>
+              </div>
+            </div>
           </div>
         </div>
 
