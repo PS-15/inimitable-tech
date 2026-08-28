@@ -21,31 +21,28 @@ export default function Home() {
 
       <section className="hero" id="top">
         <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-copy" data-reveal>
-          <p className="eyebrow"><span /> Independent digital studio · Websites + SEO</p>
-          <h1><span>MAKE YOUR</span><span className="hero-outline">SIGNAL</span><span>UNMISTAKABLE.</span></h1>
-          <div className="hero-bottomline">
-            <p className="hero-intro">INIMITABLE TECH turns a clear point of view into a digital presence people notice, understand, and remember.</p>
-            <div>
-              <PretextSignal />
-              <div className="hero-actions">
-                <a className="button primary" href="#contact">Book a strategy call <span>↗</span></a>
-                <a className="text-link" href="#work">See the work <span>↓</span></a>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="hero-object">
           <ImpossibleCanvas />
-          <p className="object-label left">01 / FORM</p>
+          <p className="object-label left">LIVE SIGNAL / 01</p>
           <p className="object-label right">MOVE TO INTERACT</p>
         </div>
 
-        <div className="hero-meta">
-          <span>WEB / SEARCH / SYSTEMS</span>
-          <span className="scroll-note">SCROLL TO ENTER <i>↓</i></span>
-          <span>INDIA · WORLDWIDE</span>
+        <div className="hero-copy" data-reveal>
+          <p className="hero-trust"><span className="trust-mark">I</span><span>FOUNDER-LED DIGITAL STUDIO</span></p>
+          <h1><span>ENGINEER A</span><span className="hero-outline">DIGITAL</span><span>PRESENCE</span><span>THAT MOVES.</span></h1>
+          <p className="hero-intro">INIMITABLE TECH designs websites and search systems that make the right business impossible to overlook.</p>
+          <PretextSignal />
+          <div className="hero-actions">
+            <a className="button primary" href="#contact">Start a project <span>↗</span></a>
+            <a className="text-link" href="#work">See the work <span>↓</span></a>
+          </div>
+        </div>
+
+        <div className="hero-stats" aria-label="Studio facts">
+          <div><b>01</b><span>FOUNDER-LED</span></div>
+          <div><b>02</b><span>WEB + SEO</span></div>
+          <div><b>03</b><span>INDIA → WORLDWIDE</span></div>
+          <div><b>04</b><span>BUILT TO PERFORM</span></div>
         </div>
       </section>
 
