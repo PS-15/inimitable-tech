@@ -1,5 +1,6 @@
 import ImpossibleCanvas from './ImpossibleCanvas';
 import MotionEffects from './MotionEffects';
+import PretextSignal from './PretextSignal';
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
           <p className="eyebrow"><span /> Independent digital studio · Websites + SEO</p>
           <h1>Built to be<br/><em>impossible</em><br/>to ignore.</h1>
           <p className="hero-intro">INIMITABLE TECH designs high-performance websites and search strategies that turn attention into business.</p>
+          <PretextSignal />
           <div className="hero-actions">
             <a className="button primary" href="#contact">Book a strategy call <span>↗</span></a>
             <a className="text-link" href="#work">See the work <span>↓</span></a>
